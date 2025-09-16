@@ -35,7 +35,36 @@ On the manager node (VPS 1), copy `.env.example` to `.env` and provide the requi
 * `MIMIR_GCS_SERVICE_ACCOUNT_JSON_B64` – base64-encoded Mimir service account JSON (see `mimir/gcs-service-account.json.example`).
 * `ALERTMANAGER_GOOGLE_CHAT_WEBHOOK_URL` – Google Chat webhook URL (see `alertmanager/google-chat-webhook.url.example`).
 
-Run `./install.sh` to materialize these secrets and render the service `docker-compose.yml` files from their `.example` templates. Review and adjust the configuration files (`loki/config.yaml`, `mimir/config.yaml`, `grafana/provisioning/datasources/datasources.yaml`, `alloy/config.alloy`) to match your bucket names, domains, and alerting requirements. Do **not** commit credentials to version control.
+Create the required Google Cloud Storage buckets before deploying Loki and Mimir:
+
+- Loki: one GCS bucket for log chunks and indexes. Example names: `loki-observability-bucket`.
+- Mimir: two GCS buckets — one for metrics blocks (TSDB) and one for ruler data. Example names: `mimir-metrics-bucket` and `mimir-ruler-bucket`.
+
+Example commands (replace names/locations to fit your org):
+
+```bash
+# Set your project
+gcloud config set project YOUR_GCP_PROJECT_ID
+
+# Create buckets (enable uniform access; choose a region or multi-region)
+gsutil mb -p YOUR_GCP_PROJECT_ID -c STANDARD -l us-central1 -b on gs://loki-observability-bucket/
+gsutil mb -p YOUR_GCP_PROJECT_ID -c STANDARD -l us-central1 -b on gs://mimir-metrics-bucket/
+gsutil mb -p YOUR_GCP_PROJECT_ID -c STANDARD -l us-central1 -b on gs://mimir-ruler-bucket/
+
+# (Optional) Set retention policies, versioning, lifecycle rules per your needs
+# gsutil retention set 30d gs://loki-observability-bucket/
+# gsutil versioning set on gs://mimir-metrics-bucket/
+```
+
+Grant the service accounts used by Loki and Mimir appropriate IAM permissions scoped to these buckets. At minimum, grant `roles/storage.objectAdmin` on each bucket (or the more restrictive set of object read/write roles your policy requires). For bucket management tasks, `roles/storage.admin` may be needed but is broader.
+
+Populate the bucket env variables in `.env` so the configuration templates pick up the names you created:
+
+* `LOKI_GCS_BUCKET`
+* `MIMIR_BLOCKS_BUCKET`
+* `MIMIR_RULER_BUCKET`
+
+Run `./install.sh` to materialize these secrets and render the service `docker-compose.yml` files and Loki/Mimir `config.yaml` files from their `.example` templates. The script will stop if any required `.env` values are still using placeholder strings (`ENTER_*` / `REPLACE_*`). Review and adjust the rendered configurations (`loki/config.yaml`, `mimir/config.yaml`, `grafana/provisioning/datasources/datasources.yaml`, `alloy/config.alloy`) to match your domains and alerting requirements. Do **not** commit credentials to version control.
 
 ---
 

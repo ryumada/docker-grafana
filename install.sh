@@ -80,9 +80,16 @@ source_env() {
 
 require_var() {
     local var_name=$1
-    if [[ -z ${!var_name-} ]]; then
-        log_error "Environment variable ${var_name} is not set."
-        exit 1
+    local value=${!var_name-}
+
+    if [[ -z ${value} ]]; then
+        echo "${var_name} is empty"
+        return 1
+    fi
+
+    if [[ ${value} == ENTER_* || ${value} == REPLACE_* ]]; then
+        echo "${var_name} still set to placeholder (${value})"
+        return 1
     fi
 }
 
@@ -132,6 +139,14 @@ main() {
         "envsubst command is available" \
         "Install gettext (envsubst) to continue." || exit 1
 
+    for var in LOKI_GCS_BUCKET MIMIR_BLOCKS_BUCKET MIMIR_RULER_BUCKET; do
+        executeCommand \
+            "Validating $var" \
+            "require_var $var" \
+            "$var is set" \
+            "Populate $var in your .env file."
+    done
+
     executeCommand \
         "Writing Loki service account" \
         "write_secret_file LOKI_GCS_SERVICE_ACCOUNT_JSON_B64 '${ROOT_DIR}/loki/gcs-service-account.json' base64" \
@@ -157,6 +172,8 @@ main() {
         "${ROOT_DIR}/mimir/docker-compose.yml.example:${ROOT_DIR}/mimir/docker-compose.yml"
         "${ROOT_DIR}/alertmanager/docker-compose.yml.example:${ROOT_DIR}/alertmanager/docker-compose.yml"
         "${ROOT_DIR}/alloy/docker-compose.yml.example:${ROOT_DIR}/alloy/docker-compose.yml"
+        "${ROOT_DIR}/loki/config.yaml.example:${ROOT_DIR}/loki/config.yaml"
+        "${ROOT_DIR}/mimir/config.yaml.example:${ROOT_DIR}/mimir/config.yaml"
     )
 
     for pair in "${templates[@]}"; do

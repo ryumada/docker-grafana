@@ -3,3 +3,5 @@
 
 *.json
 *.yml
+loki/config.yaml
+mimir/config.yaml

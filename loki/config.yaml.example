@@ -30,7 +30,7 @@ storage_config:
     active_index_directory: /var/loki/index
     cache_location: /var/loki/cache
   gcs:
-    bucket_name: loki-observability-bucket
+    bucket_name: ${LOKI_GCS_BUCKET}
 
 chunk_store_config:
   chunk_cache_config:

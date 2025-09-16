@@ -36,7 +36,7 @@ table_manager:
 blocks_storage:
   backend: gcs
   gcs:
-    bucket_name: mimir-metrics-bucket
+    bucket_name: ${MIMIR_BLOCKS_BUCKET}
   tsdb:
     dir: /var/mimir/tsdb
   bucket_store:
@@ -53,7 +53,7 @@ ruler:
 ruler_storage:
   backend: gcs
   gcs:
-    bucket_name: mimir-ruler-bucket
+    bucket_name: ${MIMIR_RULER_BUCKET}
   cache:
     max_size_items: 1024
 
