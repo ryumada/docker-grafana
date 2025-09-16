@@ -64,7 +64,7 @@ Populate the bucket env variables in `.env` so the configuration templates pick 
 * `MIMIR_BLOCKS_BUCKET`
 * `MIMIR_RULER_BUCKET`
 
-Run `./install.sh` (as the repository owner) to materialize these secrets and render the service `docker-compose.yml` files and Loki/Mimir `config.yaml` files from their `.example` templates. The script validates that the executing user owns the repository and stops if any required `.env` values are still placeholders (`ENTER_*` / `REPLACE_*`). Review and adjust the rendered configurations (`loki/config.yaml`, `mimir/config.yaml`, `grafana/provisioning/datasources/datasources.yaml`, `alloy/config.alloy`) to match your domains and alerting requirements. Do **not** commit credentials to version control.
+Run `./setup.sh` (as the repository owner) to materialize these secrets and render the service `docker-compose.yml` files and Loki/Mimir `config.yaml` files from their `.example` templates. The script validates that the executing user owns the repository and stops if any required `.env` values are still placeholders (`ENTER_*` / `REPLACE_*`). Review and adjust the rendered configurations (`loki/config.yaml`, `mimir/config.yaml`, `grafana/provisioning/datasources/datasources.yaml`, `alloy/config.alloy`) to match your domains and alerting requirements. Do **not** commit credentials to version control.
 
 ---
 
@@ -163,7 +163,7 @@ docker stack deploy -c mimir/docker-compose.yml observability
 docker stack deploy -c alertmanager/docker-compose.yml observability
 docker stack deploy -c alloy/docker-compose.yml observability
 ```
-All services share the external `grafana` network so Traefik can route traffic and the back-end systems can communicate. Re-run `./install.sh` whenever you modify `.env` to refresh the rendered compose files before deploying.
+All services share the external `grafana` network so Traefik can route traffic and the back-end systems can communicate. Re-run `./setup.sh` whenever you modify `.env` to refresh the rendered compose files before deploying.
 
 ---
 
@@ -242,8 +242,8 @@ After editing a configuration or secret, re-run the corresponding `docker stack 
 * `alertmanager/` – Alertmanager deployment and Google Chat receiver config.
 * `alloy/` – Grafana Alloy agent configuration for logs and host metrics.
 * `.env.example` – Template of required secret variables and compose settings.
-* `install.sh` – Helper script to materialize secrets from `.env` and render compose files.
-* `*/docker-compose.yml.example` – Templates consumed by `install.sh` to produce deployable manifests.
+* `setup.sh` – Helper script to materialize secrets from `.env` and render compose/config files.
+* `*/docker-compose.yml.example` – Templates consumed by `setup.sh` to produce deployable manifests.
 
 ---
 
