@@ -1,0 +1,37 @@
+version: "3.8"
+
+services:
+  alloy:
+    image: ${ALLOY_IMAGE}
+    command:
+      - run
+      - /etc/alloy/config.alloy
+    environment:
+      CLUSTER_NAME: ${ALLOY_CLUSTER_NAME}
+      LOKI_ENDPOINT: ${ALLOY_LOKI_ENDPOINT}
+      MIMIR_REMOTE_WRITE_URL: ${ALLOY_MIMIR_REMOTE_WRITE_URL}
+    volumes:
+      - ./config.alloy:/etc/alloy/config.alloy:ro
+      - /var/log:/var/log:ro
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /run/log/journal:/run/log/journal:ro
+    networks:
+      - stack-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      mode: global
+      placement:
+        constraints:
+          - "${ALLOY_NODE_CONSTRAINT}"
+      restart_policy:
+        condition: any
+
+networks:
+  stack-network:
+    external: true
+    name: ${OVERLAY_NETWORK_NAME}

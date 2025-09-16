@@ -1,0 +1,49 @@
+version: "3.8"
+
+services:
+  mimir:
+    image: ${MIMIR_IMAGE}
+    command:
+      - -config.file=/etc/mimir/config.yaml
+      - -target=all
+    ports:
+      - "${MIMIR_HTTP_PORT}:9009"
+    volumes:
+      - mimir-data:/var/mimir
+    configs:
+      - source: mimir-config
+        target: /etc/mimir/config.yaml
+    secrets:
+      - mimir-gcs-credentials
+    environment:
+      GOOGLE_APPLICATION_CREDENTIALS: /run/secrets/mimir-gcs-credentials
+    networks:
+      - stack-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      placement:
+        constraints:
+          - "${MIMIR_NODE_CONSTRAINT}"
+      replicas: ${MIMIR_REPLICAS}
+      restart_policy:
+        condition: any
+
+volumes:
+  mimir-data:
+
+configs:
+  mimir-config:
+    file: ./config.yaml
+
+secrets:
+  mimir-gcs-credentials:
+    file: ./gcs-service-account.json
+
+networks:
+  stack-network:
+    external: true
+    name: ${OVERLAY_NETWORK_NAME}

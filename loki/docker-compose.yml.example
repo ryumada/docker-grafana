@@ -1,0 +1,48 @@
+version: "3.8"
+
+services:
+  loki:
+    image: ${LOKI_IMAGE}
+    command:
+      - -config.file=/etc/loki/config.yaml
+    ports:
+      - "${LOKI_HTTP_PORT}:3100"
+    volumes:
+      - loki-data:/var/loki
+    configs:
+      - source: loki-config
+        target: /etc/loki/config.yaml
+    secrets:
+      - loki-gcs-credentials
+    environment:
+      GOOGLE_APPLICATION_CREDENTIALS: /run/secrets/loki-gcs-credentials
+    networks:
+      - stack-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      placement:
+        constraints:
+          - "${LOKI_NODE_CONSTRAINT}"
+      replicas: ${LOKI_REPLICAS}
+      restart_policy:
+        condition: any
+
+volumes:
+  loki-data:
+
+configs:
+  loki-config:
+    file: ./config.yaml
+
+secrets:
+  loki-gcs-credentials:
+    file: ./gcs-service-account.json
+
+networks:
+  stack-network:
+    external: true
+    name: ${OVERLAY_NETWORK_NAME}

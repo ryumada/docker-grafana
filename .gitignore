@@ -1,0 +1,5 @@
+.env
+.env.bak
+
+*.json
+*.yml

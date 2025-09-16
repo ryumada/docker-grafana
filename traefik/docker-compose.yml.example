@@ -1,0 +1,48 @@
+version: "3.8"
+
+services:
+  traefik:
+    image: ${TRAEFIK_IMAGE}
+    command:
+      - --log.level=INFO
+      - --api.dashboard=true
+      - --providers.docker=true
+      - --providers.docker.swarmMode=true
+      - --providers.docker.exposedbydefault=false
+      - --providers.docker.network=${OVERLAY_NETWORK_NAME}
+      - --entrypoints.${TRAEFIK_INSECURE_ENTRYPOINT}.address=:80
+      - --entrypoints.${TRAEFIK_INSECURE_ENTRYPOINT}.http.redirections.entryPoint.to=${TRAEFIK_SECURE_ENTRYPOINT}
+      - --entrypoints.${TRAEFIK_INSECURE_ENTRYPOINT}.http.redirections.entryPoint.scheme=https
+      - --entrypoints.${TRAEFIK_SECURE_ENTRYPOINT}.address=:443
+      - --certificatesresolvers.${TRAEFIK_CERT_RESOLVER}.acme.email=${TRAEFIK_ACME_EMAIL}
+      - --certificatesresolvers.${TRAEFIK_CERT_RESOLVER}.acme.storage=${TRAEFIK_ACME_STORAGE}
+      - --certificatesresolvers.${TRAEFIK_CERT_RESOLVER}.acme.httpchallenge=true
+      - --certificatesresolvers.${TRAEFIK_CERT_RESOLVER}.acme.httpchallenge.entrypoint=${TRAEFIK_INSECURE_ENTRYPOINT}
+    ports:
+      - "${TRAEFIK_HTTP_PORT}:80"
+      - "${TRAEFIK_HTTPS_PORT}:443"
+    volumes:
+      - traefik-letsencrypt:/letsencrypt
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - stack-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+          - "${TRAEFIK_NODE_CONSTRAINT}"
+      restart_policy:
+        condition: any
+
+volumes:
+  traefik-letsencrypt:
+
+networks:
+  stack-network:
+    external: true
+    name: ${OVERLAY_NETWORK_NAME}

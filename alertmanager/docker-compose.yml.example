@@ -1,0 +1,47 @@
+version: "3.8"
+
+services:
+  alertmanager:
+    image: ${ALERTMANAGER_IMAGE}
+    command:
+      - --config.file=/etc/alertmanager/config.yaml
+      - --storage.path=/alertmanager
+    ports:
+      - "${ALERTMANAGER_HTTP_PORT}:9093"
+    volumes:
+      - alertmanager-data:/alertmanager
+    configs:
+      - source: alertmanager-config
+        target: /etc/alertmanager/config.yaml
+    secrets:
+      - alertmanager-google-chat-webhook
+    networks:
+      - stack-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      placement:
+        constraints:
+          - "${ALERTMANAGER_NODE_CONSTRAINT}"
+      replicas: ${ALERTMANAGER_REPLICAS}
+      restart_policy:
+        condition: any
+
+volumes:
+  alertmanager-data:
+
+configs:
+  alertmanager-config:
+    file: ./config.yaml
+
+secrets:
+  alertmanager-google-chat-webhook:
+    file: ./google-chat-webhook.url
+
+networks:
+  stack-network:
+    external: true
+    name: ${OVERLAY_NETWORK_NAME}
