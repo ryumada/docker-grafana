@@ -93,6 +93,18 @@ require_var() {
     fi
 }
 
+ensure_repo_owner() {
+    local owner
+    owner=$(stat -c '%U' "${ROOT_DIR}")
+    local current
+    current=$(id -un)
+
+    if [[ ${owner} != ${current} ]]; then
+        log_error "This script must be run as the repository owner (${owner}). Current user: ${current}."
+        exit 1
+    fi
+}
+
 write_secret_file() {
     local var_name=$1
     local target_file=$2
@@ -125,6 +137,7 @@ render_template() {
 }
 
 main() {
+    ensure_repo_owner
     source_env
 
     executeCommand \

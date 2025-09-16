@@ -64,7 +64,7 @@ Populate the bucket env variables in `.env` so the configuration templates pick 
 * `MIMIR_BLOCKS_BUCKET`
 * `MIMIR_RULER_BUCKET`
 
-Run `./install.sh` to materialize these secrets and render the service `docker-compose.yml` files and Loki/Mimir `config.yaml` files from their `.example` templates. The script will stop if any required `.env` values are still using placeholder strings (`ENTER_*` / `REPLACE_*`). Review and adjust the rendered configurations (`loki/config.yaml`, `mimir/config.yaml`, `grafana/provisioning/datasources/datasources.yaml`, `alloy/config.alloy`) to match your domains and alerting requirements. Do **not** commit credentials to version control.
+Run `./install.sh` (as the repository owner) to materialize these secrets and render the service `docker-compose.yml` files and Loki/Mimir `config.yaml` files from their `.example` templates. The script validates that the executing user owns the repository and stops if any required `.env` values are still placeholders (`ENTER_*` / `REPLACE_*`). Review and adjust the rendered configurations (`loki/config.yaml`, `mimir/config.yaml`, `grafana/provisioning/datasources/datasources.yaml`, `alloy/config.alloy`) to match your domains and alerting requirements. Do **not** commit credentials to version control.
 
 ---
 
