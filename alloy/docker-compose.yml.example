@@ -3,6 +3,7 @@ version: "3.8"
 services:
   alloy:
     image: ${ALLOY_IMAGE}
+    hostname: "{{.Node.Hostname}}"
     command:
       - run
       - /etc/alloy/config.alloy
@@ -10,6 +11,7 @@ services:
       CLUSTER_NAME: ${ALLOY_CLUSTER_NAME}
       LOKI_ENDPOINT: ${ALLOY_LOKI_ENDPOINT}
       MIMIR_REMOTE_WRITE_URL: ${ALLOY_MIMIR_REMOTE_WRITE_URL}
+      ALLOY_HOSTNAME: "{{.Node.Hostname}}"
     volumes:
       - ./config.alloy:/etc/alloy/config.alloy:ro
       - /var/log:/var/log:ro

@@ -4,7 +4,7 @@ logging {
 }
 
 locals {
-  hostname = sys.hostname()
+  hostname = env.ALLOY_HOSTNAME
 }
 
 loki.write "default" {
