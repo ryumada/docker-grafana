@@ -5,8 +5,14 @@ services:
       GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER}
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD}
       GF_FEATURE_TOGGLES_ENABLE: ${GRAFANA_FEATURE_TOGGLES}
+      GF_DATABASE_TYPE: postgres
+      GF_DATABASE_HOST: ${GRAFANA_DB_HOST}
+      GF_DATABASE_NAME: ${GRAFANA_DB_NAME}
+      GF_DATABASE_USER: ${GRAFANA_DB_USER}
+      GF_DATABASE_PASSWORD: ${GRAFANA_DB_PASSWORD}
+      GF_DATABASE_SSL_MODE: ${GRAFANA_DB_SSL_MODE}
+      GF_SESSION_PROVIDER: database
     volumes:
-      - grafana-data:/var/lib/grafana
       - ./provisioning:/etc/grafana/provisioning
     networks:
       - stack-network
@@ -37,9 +43,6 @@ services:
         - traefik.http.routers.grafana-http.middlewares=grafana-redirect
         - traefik.http.middlewares.grafana-redirect.redirectscheme.scheme=https
         - traefik.http.middlewares.grafana-redirect.redirectscheme.permanent=true
-
-volumes:
-  grafana-data:
 
 networks:
   stack-network:

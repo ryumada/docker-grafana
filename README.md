@@ -34,6 +34,9 @@ On the manager node (VPS 1), copy `.env.example` to `.env` and provide the requi
 * `LOKI_GCS_SERVICE_ACCOUNT_JSON_B64` – base64-encoded Loki service account JSON (use `loki/gcs-service-account.json.example` as a reference).
 * `MIMIR_GCS_SERVICE_ACCOUNT_JSON_B64` – base64-encoded Mimir service account JSON (see `mimir/gcs-service-account.json.example`).
 * `ALERTMANAGER_GOOGLE_CHAT_WEBHOOK_URL` – Google Chat webhook URL (see `alertmanager/google-chat-webhook.url.example`).
+* `GRAFANA_ADMIN_PASSWORD` – override the default admin password.
+* `GRAFANA_DB_*` – connection details for the external Grafana PostgreSQL database (`HOST`, `NAME`, `USER`, `PASSWORD`, `SSL_MODE`).
+* `TRAEFIK_ACME_EMAIL` – ACME contact email used by Traefik when requesting certificates.
 
 Create the required Google Cloud Storage buckets before deploying Loki and Mimir:
 
@@ -57,6 +60,11 @@ gsutil mb -p YOUR_GCP_PROJECT_ID -c STANDARD -l us-central1 -b on gs://mimir-rul
 ```
 
 Grant the service accounts used by Loki and Mimir appropriate IAM permissions scoped to these buckets. At minimum, grant `roles/storage.objectAdmin` on each bucket (or the more restrictive set of object read/write roles your policy requires). For bucket management tasks, `roles/storage.admin` may be needed but is broader.
+
+Provision the backing services that make Grafana and Traefik stateless/highly available:
+
+* **Grafana database:** create or reuse a managed PostgreSQL instance. Grant a user/database that Grafana can write to, then set the `GRAFANA_DB_*` variables in `.env` accordingly.
+* **Traefik ACME storage:** each Traefik instance persists certificates locally at `/letsencrypt/acme.json`. Ensure the volume mount has enough space and is included in your backups.
 
 Populate the bucket env variables in `.env` so the configuration templates pick up the names you created:
 
@@ -229,7 +237,7 @@ After editing a configuration or secret, re-run the corresponding `docker stack 
 ## Persisting Binaries and Artifacts
 
 * Loki and Mimir rely on GCS buckets for long-term storage. Ensure lifecycle policies, retention, and IAM permissions meet your compliance requirements.
-* Grafana stores dashboards and state in the `grafana-data` volume. Create regular backups by snapshotting the Swarm volume driver storage or copying `/var/lib/docker/volumes` from the host.
+* Grafana stores dashboards and state in the external PostgreSQL database you configure via `GRAFANA_DB_*`. Back up that database using your regular Postgres backup tooling (snapshots, logical dumps, etc.).
 
 ---
 

@@ -13,7 +13,7 @@ services:
       - --entrypoints.${TRAEFIK_INSECURE_ENTRYPOINT}.http.redirections.entryPoint.scheme=https
       - --entrypoints.${TRAEFIK_SECURE_ENTRYPOINT}.address=:443
       - --certificatesresolvers.${TRAEFIK_CERT_RESOLVER}.acme.email=${TRAEFIK_ACME_EMAIL}
-      - --certificatesresolvers.${TRAEFIK_CERT_RESOLVER}.acme.storage=${TRAEFIK_ACME_STORAGE}
+      - --certificatesresolvers.${TRAEFIK_CERT_RESOLVER}.acme.storage=/letsencrypt/acme.json
       - --certificatesresolvers.${TRAEFIK_CERT_RESOLVER}.acme.httpchallenge=true
       - --certificatesresolvers.${TRAEFIK_CERT_RESOLVER}.acme.httpchallenge.entrypoint=${TRAEFIK_INSECURE_ENTRYPOINT}
     ports:

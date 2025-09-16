@@ -152,7 +152,10 @@ main() {
         "envsubst command is available" \
         "Install gettext (envsubst) to continue." || exit 1
 
-    for var in LOKI_GCS_BUCKET MIMIR_BLOCKS_BUCKET MIMIR_RULER_BUCKET; do
+    for var in LOKI_GCS_BUCKET MIMIR_BLOCKS_BUCKET MIMIR_RULER_BUCKET \
+               GRAFANA_ADMIN_PASSWORD GRAFANA_DOMAIN \
+               GRAFANA_DB_HOST GRAFANA_DB_NAME GRAFANA_DB_USER GRAFANA_DB_PASSWORD \
+               TRAEFIK_ACME_EMAIL; do
         executeCommand \
             "Validating $var" \
             "require_var $var" \
