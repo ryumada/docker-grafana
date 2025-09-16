@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   alloy:
     image: ${ALLOY_IMAGE}
