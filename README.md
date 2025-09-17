@@ -65,7 +65,18 @@ Grant the service accounts used by Loki and Mimir appropriate IAM permissions sc
 
 Provision the backing services that make Grafana and Traefik stateless/highly available:
 
-* **Grafana database:** create or reuse a managed PostgreSQL instance. Grant a user/database that Grafana can write to, then set the `GRAFANA_DB_*` variables in `.env` accordingly.
+* **Grafana database:** create or reuse a managed PostgreSQL instance. Grant a user/database that Grafana can write to, then set the `GRAFANA_DB_*` variables in `.env` accordingly. For example:
+  ```sql
+  -- create a role with login and createdb so Grafana can manage its own schema
+  CREATE ROLE grafana_profile WITH LOGIN CREATEDB PASSWORD 'change_me';
+  CREATE DATABASE grafana_data OWNER grafana_profile;
+  ```
+  On many systems you can run these via:
+  ```bash
+  sudo -u postgres psql -c "CREATE ROLE grafana_profile WITH LOGIN CREATEDB PASSWORD 'change_me';"
+  sudo -u postgres psql -c "CREATE DATABASE grafana_data OWNER grafana_profile;"
+  ```
+  > Grant only what Grafana needs (LOGIN + CREATEDB on its own database) to avoid unnecessary privileges.
 * **Traefik ACME storage:** each Traefik instance persists certificates locally at `/letsencrypt/acme.json`. Ensure the volume mount has enough space and is included in your backups.
 
 Populate the bucket env variables in `.env` so the configuration templates pick up the names you created:
