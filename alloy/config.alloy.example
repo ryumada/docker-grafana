@@ -3,77 +3,51 @@ logging {
   format = "logfmt"
 }
 
-locals {
-  hostname = env.ALLOY_HOSTNAME
-}
-
-loki.write "default" {
+// Logging pipeline
+loki.write "loki_sink" {
   endpoint {
-    url = env.LOKI_ENDPOINT
+    url = env("LOKI_ENDPOINT")
   }
   labels = {
-    cluster = env.CLUSTER_NAME,
+    "cluster" = env("CLUSTER_NAME"),
   }
 }
 
 ${ALLOY_LOG_SOURCES}
 
-loki.source.journal "journald" {
+loki.source.journal "journal_logs" {
   path = "/run/log/journal"
   labels = {
-    host = local.hostname,
-    job  = "journald",
+    "host" = env("ALLOY_HOSTNAME"),
+    "job"  = "journald",
   }
-  forward_to = [loki.write.default.receiver]
+  forward_to = [loki.write.loki_sink.receiver]
 }
 
-otelcol.receiver.hostmetrics "host" {
-  collection_interval = "30s"
-
-  scrapers = {
-    cpu        = {},
-    disk       = {},
-    filesystem = {},
-    load       = {},
-    memory     = {},
-    network    = {},
-    paging     = {},
-    processes  = {},
-  }
-}
-
-otelcol.processor.resource "host" {
-  attributes = [
-    {
-      action = "insert",
-      key    = "service.name",
-      value  = "host-metrics",
-    },
-    {
-      action = "upsert",
-      key    = "host.name",
-      value  = local.hostname,
-    },
-  ]
-}
-
-otelcol.processor.batch "default" {
-  timeout         = "5s"
-  send_batch_size = 1000
-}
-
-otelcol.exporter.prometheusremotewrite "mimir" {
+// Metrics pipeline
+prometheus.remote_write "mimir_sink" {
   endpoint {
-    url = env.MIMIR_REMOTE_WRITE_URL
+    url = env("MIMIR_REMOTE_WRITE_URL")
   }
 }
 
-otelcol.service "metrics" {
-  pipelines = {
-    metrics = {
-      receivers  = [otelcol.receiver.hostmetrics.host.receiver],
-      processors = [otelcol.processor.resource.host.processor, otelcol.processor.batch.default.processor],
-      exporters  = [otelcol.exporter.prometheusremotewrite.mimir.exporter],
-    },
+// Host metrics
+prometheus.exporter.unix "host_exporter" {}
+
+prometheus.scrape "host_metrics" {
+  targets    = prometheus.exporter.unix.host_exporter.targets
+  forward_to = [prometheus.remote_write.mimir_sink.receiver]
+
+  relabel_configs {
+    rule {
+      action       = "replace"
+      target_label = "service.name"
+      replacement  = "host-metrics"
+    }
+    rule {
+      action       = "replace"
+      target_label = "host.name"
+      replacement  = env("ALLOY_HOSTNAME")
+    }
   }
 }
