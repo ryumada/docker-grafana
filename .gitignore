@@ -3,6 +3,8 @@
 
 *.json
 *.yml
+
+alertmanager/google-chat-webhook.url
+alloy/config.alloy
 loki/config.yaml
 mimir/config.yaml
-alloy/config.alloy
