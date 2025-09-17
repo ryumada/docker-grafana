@@ -12,7 +12,7 @@ loki.write "default" {
     url = env.LOKI_ENDPOINT
   }
   labels = {
-    cluster = env.CLUSTER_NAME
+    cluster = env.CLUSTER_NAME,
   }
 }
 
@@ -21,8 +21,8 @@ ${ALLOY_LOG_SOURCES}
 loki.source.journal "journald" {
   path = "/run/log/journal"
   labels = {
-    host = local.hostname
-    job  = "journald"
+    host = local.hostname,
+    job  = "journald",
   }
   forward_to = [loki.write.default.receiver]
 }
@@ -31,29 +31,29 @@ otelcol.receiver.hostmetrics "host" {
   collection_interval = "30s"
 
   scrapers = {
-    cpu        {}
-    disk       {}
-    filesystem {}
-    load       {}
-    memory     {}
-    network    {}
-    paging     {}
-    processes  {}
+    cpu        = {},
+    disk       = {},
+    filesystem = {},
+    load       = {},
+    memory     = {},
+    network    = {},
+    paging     = {},
+    processes  = {},
   }
 }
 
 otelcol.processor.resource "host" {
   attributes = [
     {
-      action = "insert"
-      key    = "service.name"
-      value  = "host-metrics"
+      action = "insert",
+      key    = "service.name",
+      value  = "host-metrics",
     },
     {
-      action = "upsert"
-      key    = "host.name"
-      value  = local.hostname
-    }
+      action = "upsert",
+      key    = "host.name",
+      value  = local.hostname,
+    },
   ]
 }
 
@@ -71,9 +71,9 @@ otelcol.exporter.prometheusremotewrite "mimir" {
 otelcol.service "metrics" {
   pipelines = {
     metrics = {
-      receivers  = [otelcol.receiver.hostmetrics.host.receiver]
-      processors = [otelcol.processor.resource.host.processor, otelcol.processor.batch.default.processor]
-      exporters  = [otelcol.exporter.prometheusremotewrite.mimir.exporter]
-    }
+      receivers  = [otelcol.receiver.hostmetrics.host.receiver],
+      processors = [otelcol.processor.resource.host.processor, otelcol.processor.batch.default.processor],
+      exporters  = [otelcol.exporter.prometheusremotewrite.mimir.exporter],
+    },
   }
 }
