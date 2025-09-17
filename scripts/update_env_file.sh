@@ -98,7 +98,11 @@ main() {
   log_info "Updating env file for ${service}"
   ensure_repo_owner "$root_dir"
 
-  executeCommand "Changing directory to repo root" "cd '$root_dir'" "In repo root" "Unable to change to repo root"
+  if ! cd "$root_dir"; then
+    log_error "Unable to change directory to repo root: $root_dir"
+    exit 1
+  fi
+  log_success "Change directory to repo root directory: $root_dir"
 
   backup_env
 
