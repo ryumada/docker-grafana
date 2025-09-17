@@ -11,7 +11,7 @@ services:
       GF_DATABASE_USER: ${GRAFANA_DB_USER}
       GF_DATABASE_PASSWORD: ${GRAFANA_DB_PASSWORD}
       GF_DATABASE_SSL_MODE: ${GRAFANA_DB_SSL_MODE}
-      GF_SESSION_PROVIDER: database
+      GF_SESSION_PROVIDER: ${GRAFANA_SESSION_PROVIDER}
     volumes:
       - ./provisioning:/etc/grafana/provisioning
     networks:

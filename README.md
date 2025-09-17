@@ -36,6 +36,7 @@ On the manager node (VPS 1), copy `.env.example` to `.env` and provide the requi
 * `ALERTMANAGER_GOOGLE_CHAT_WEBHOOK_URL` – Google Chat webhook URL (see `alertmanager/google-chat-webhook.url.example`).
 * `GRAFANA_ADMIN_PASSWORD` – override the default admin password.
 * `GRAFANA_DB_*` – connection details for the external Grafana PostgreSQL database (`HOST`, `NAME`, `USER`, `PASSWORD`, `SSL_MODE`).
+* `GRAFANA_SESSION_PROVIDER` – session store backend (defaults to `database`).
 * `TRAEFIK_ACME_EMAIL` – ACME contact email used by Traefik when requesting certificates.
 * `ALLOY_FILE_LOG_PATHS` – comma-separated file globs Alloy should tail for log ingestion (defaults to `/var/log/*log`).
 
@@ -74,6 +75,8 @@ Populate the bucket env variables in `.env` so the configuration templates pick 
 * `MIMIR_RULER_BUCKET`
 
 Run `./setup.sh` (as the repository owner) to materialize these secrets and render the service `docker-compose.yml` files and Loki/Mimir `config.yaml` files from their `.example` templates. The script validates that the executing user owns the repository and stops if any required `.env` values are still placeholders (`ENTER_*` / `REPLACE_*`). Review and adjust the rendered configurations (`loki/config.yaml`, `mimir/config.yaml`, `grafana/provisioning/datasources/datasources.yaml`, `alloy/config.alloy`) to match your domains and alerting requirements. Do **not** commit credentials to version control.
+
+**Using host-level Nginx instead of Traefik for public routing?** You can leave the Traefik stack running internally and forward traffic from Nginx to the published Traefik HTTP/HTTPS ports. See `traefik/nginx.conf.example` for a starter sites-available configuration. If you proxy this way, you may want to change `TRAEFIK_HTTP_PORT` / `TRAEFIK_HTTPS_PORT` in `.env` to non-standard ports (e.g., 8080/8443) so Nginx can bind :80/:443 directly.
 
 ---
 
@@ -245,6 +248,7 @@ After editing a configuration or secret, re-run the corresponding `docker stack 
 ## Directory Reference
 
 * `traefik/` – reverse proxy configuration and Let's Encrypt storage.
+* `traefik/nginx.conf.example` – example host-level Nginx config that proxies to Traefik.
 * `grafana/` – Grafana deployment and datasource provisioning.
 * `loki/` – Loki service definition, config, and credentials template.
 * `mimir/` – Mimir service definition, config, and credentials template.
