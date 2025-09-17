@@ -131,21 +131,13 @@ generate_alloy_log_sources() {
 
         printf 'loki.source.file "%s" {
 ' "${name}"
-        printf '	targets = [
+        printf '  targets    = [
 '
-        printf '		{
+        printf '    {__path__ = "%s", host = env("ALLOY_HOSTNAME"), job = "%s"},
+' "${trimmed}" "${name}"
+        printf '  ]
 '
-        printf '			"__path__" = "%s",
-' "${trimmed}"
-        printf '			"host"     = env("ALLOY_HOSTNAME"),
-'
-        printf '			"job"      = "%s",
-' "${name}"
-        printf '		},
-'
-        printf '	]
-'
-        printf '	forward_to = [loki.write.default.receiver],
+        printf '  forward_to = [loki.write.loki_sink.receiver]
 '
         printf '}
 
@@ -157,21 +149,13 @@ generate_alloy_log_sources() {
     if [[ ${idx} -eq 0 ]]; then
         printf 'loki.source.file "varlogs_0" {
 '
-        printf '	targets = [
+        printf '  targets    = [
 '
-        printf '		{
+        printf '    {__path__ = "/var/log/*log", host = env("ALLOY_HOSTNAME"), job = "varlogs_0"},
 '
-        printf '			"__path__" = "/var/log/*log",
+        printf '  ]
 '
-        printf '			"host"     = env("ALLOY_HOSTNAME"),
-'
-        printf '			"job"      = "varlogs_0",
-'
-        printf '		},
-'
-        printf '	]
-'
-        printf '	forward_to = [loki.write.default.receiver],
+        printf '  forward_to = [loki.write.loki_sink.receiver]
 '
         printf '}
 

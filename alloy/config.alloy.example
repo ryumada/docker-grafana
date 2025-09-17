@@ -8,7 +8,7 @@ loki.write "loki_sink" {
   endpoint {
     url = env("LOKI_ENDPOINT")
   }
-  labels = {
+  external_labels = {
     "cluster" = env("CLUSTER_NAME"),
   }
 }
@@ -16,12 +16,11 @@ loki.write "loki_sink" {
 ${ALLOY_LOG_SOURCES}
 
 loki.source.journal "journal_logs" {
-  path = "/run/log/journal"
-  labels = {
+  forward_to = [loki.write.loki_sink.receiver]
+  labels     = {
     "host" = env("ALLOY_HOSTNAME"),
     "job"  = "journald",
   }
-  forward_to = [loki.write.loki_sink.receiver]
 }
 
 // Metrics pipeline
