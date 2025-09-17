@@ -39,6 +39,7 @@ On the manager node (VPS 1), copy `.env.example` to `.env` and provide the requi
 * `GRAFANA_SESSION_PROVIDER` – session store backend (defaults to `database`).
 * `TRAEFIK_ACME_EMAIL` – ACME contact email used by Traefik when requesting certificates.
 * `ALLOY_FILE_LOG_PATHS` – comma-separated file globs Alloy should tail for log ingestion (defaults to `/var/log/*log`).
+> Keep any values that include spaces (e.g., node placement constraints) wrapped in quotes when editing `.env`.
 
 Create the required Google Cloud Storage buckets before deploying Loki and Mimir:
 
