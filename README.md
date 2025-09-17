@@ -145,6 +145,12 @@ nc -vzu PEER_IP 4789
    docker node update --label-add role.alloy=true alloy-node-name
    ```
 
+To check if the node is already added the role, run the following command:
+
+```bash
+docker node inspect --format '{{.Description.Hostname}}: {{.Spec.Labels}}' $(docker node ls -q)
+```
+
 ---
 
 ## Step 4: Create the Encrypted Overlay Network
