@@ -184,7 +184,7 @@ docker network create \
 Run all stack deployments from the manager node at the repository root. The examples below use the stack name `observability`.
 
 ```bash
-cd /path/to/docker-loki
+cd /path/to/docker-grafana
 
 docker stack deploy -c traefik/docker-compose.yml observability
 docker stack deploy -c grafana/docker-compose.yml observability
