@@ -132,52 +132,53 @@ generate_alloy_log_sources() {
         printf 'loki.source.file "%s" {
 ' "${name}"
         printf '  targets = [
-'
+' 
         printf '    {
-'
-        printf '      __path__ = "%s"
+' 
+        printf '      __path__ = "%s",
 ' "${trimmed}"
-        printf '      host     = local.hostname
-'
-        printf '      job      = "%s"
+        printf '      host     = local.hostname,
+' 
+        printf '      job      = "%s",
 ' "${name}"
         printf '    }
-'
+' 
         printf '  ]
-'
+' 
         printf '  forward_to = [loki.write.default.receiver]
-'
+' 
         printf '}
 
-'
+' 
 
         ((idx++))
     done
 
     if [[ ${idx} -eq 0 ]]; then
         printf 'loki.source.file "varlogs_0" {
-'
+' 
         printf '  targets = [
-'
+' 
         printf '    {
-'
-        printf '      __path__ = "/var/log/*log"
-'
-        printf '      host     = local.hostname
-'
-        printf '      job      = "varlogs_0"
-'
+' 
+        printf '      __path__ = "/var/log/*log",
+' 
+        printf '      host     = local.hostname,
+' 
+        printf '      job      = "varlogs_0",
+' 
         printf '    }
-'
+' 
         printf '  ]
-'
+' 
         printf '  forward_to = [loki.write.default.receiver]
-'
+' 
         printf '}
 
-'
+' 
     fi
 }
+
 
 
 write_secret_file() {
