@@ -37,6 +37,7 @@ On the manager node (VPS 1), copy `.env.example` to `.env` and provide the requi
 * `GRAFANA_ADMIN_PASSWORD` – override the default admin password.
 * `GRAFANA_DB_*` – connection details for the external Grafana PostgreSQL database (`HOST`, `NAME`, `USER`, `PASSWORD`, `SSL_MODE`).
 * `TRAEFIK_ACME_EMAIL` – ACME contact email used by Traefik when requesting certificates.
+* `ALLOY_FILE_LOG_PATHS` – comma-separated file globs Alloy should tail for log ingestion (defaults to `/var/log/*log`).
 
 Create the required Google Cloud Storage buckets before deploying Loki and Mimir:
 
@@ -248,7 +249,7 @@ After editing a configuration or secret, re-run the corresponding `docker stack 
 * `loki/` – Loki service definition, config, and credentials template.
 * `mimir/` – Mimir service definition, config, and credentials template.
 * `alertmanager/` – Alertmanager deployment and Google Chat receiver config.
-* `alloy/` – Grafana Alloy agent configuration for logs and host metrics.
+* `alloy/` – Grafana Alloy agent configuration for logs and host metrics (rendered from `.env`, including `ALLOY_FILE_LOG_PATHS`).
 * `.env.example` – Template of required secret variables and compose settings.
 * `setup.sh` – Helper script to materialize secrets from `.env` and render compose/config files.
 * `*/docker-compose.yml.example` – Templates consumed by `setup.sh` to produce deployable manifests.

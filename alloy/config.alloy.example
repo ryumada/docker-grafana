@@ -16,16 +16,7 @@ loki.write "default" {
   }
 }
 
-loki.source.file "varlogs" {
-  targets = [
-    {
-      __path__ = "/var/log/*log"
-      host     = local.hostname
-      job      = "varlogs"
-    }
-  ]
-  forward_to = [loki.write.default.receiver]
-}
+${ALLOY_LOG_SOURCES}
 
 loki.source.journal "journald" {
   path = "/run/log/journal"

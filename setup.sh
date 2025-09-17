@@ -105,6 +105,52 @@ ensure_repo_owner() {
     fi
 }
 
+generate_alloy_log_sources() {
+    local raw="${ALLOY_FILE_LOG_PATHS-}"
+    if [[ -z ${raw} ]]; then
+        raw="/var/log/*log"
+    fi
+
+    local result=""
+    local idx=0
+    IFS=',' read -r -a paths <<< "${raw}"
+    for path in "${paths[@]}"; do
+        local trimmed
+        trimmed=$(printf '%s' "$path" | xargs)
+        if [[ -z ${trimmed} ]]; then
+            continue
+        fi
+
+        local sanitized=${trimmed//[^a-zA-Z0-9]/_}
+        sanitized=${sanitized##_}
+        sanitized=${sanitized%%_}
+        sanitized=${sanitized,,}
+        if [[ -z ${sanitized} ]]; then
+            sanitized="log"
+        fi
+        local name="${sanitized}_${idx}"
+
+        result+="loki.source.file \"${name}\" {\n"
+        result+="  targets = [\n"
+        result+="    {\n"
+        result+="      __path__ = \"${trimmed}\"\n"
+        result+="      host     = local.hostname\n"
+        result+="      job      = \"${name}\"\n"
+        result+="    }\n"
+        result+="  ]\n"
+        result+="  forward_to = [loki.write.default.receiver]\n"
+        result+="}\n\n"
+
+        ((idx++))
+    done
+
+    if [[ -z ${result} ]]; then
+        result="loki.source.file \"varlogs_0\" {\n  targets = [\n    {\n      __path__ = \"/var/log/*log\"\n      host     = local.hostname\n      job      = \"varlogs_0\"\n    }\n  ]\n  forward_to = [loki.write.default.receiver]\n}\n\n"
+    fi
+
+    printf '%s' "${result}"
+}
+
 write_secret_file() {
     local var_name=$1
     local target_file=$2
@@ -139,6 +185,8 @@ render_template() {
 main() {
     ensure_repo_owner
     source_env
+
+    export ALLOY_LOG_SOURCES="$(generate_alloy_log_sources)"
 
     executeCommand \
         "Verifying base64 availability" \
@@ -188,6 +236,7 @@ main() {
         "${ROOT_DIR}/mimir/docker-compose.yml.example:${ROOT_DIR}/mimir/docker-compose.yml"
         "${ROOT_DIR}/alertmanager/docker-compose.yml.example:${ROOT_DIR}/alertmanager/docker-compose.yml"
         "${ROOT_DIR}/alloy/docker-compose.yml.example:${ROOT_DIR}/alloy/docker-compose.yml"
+        "${ROOT_DIR}/alloy/config.alloy.example:${ROOT_DIR}/alloy/config.alloy"
         "${ROOT_DIR}/loki/config.yaml.example:${ROOT_DIR}/loki/config.yaml"
         "${ROOT_DIR}/mimir/config.yaml.example:${ROOT_DIR}/mimir/config.yaml"
     )

@@ -5,3 +5,4 @@
 *.yml
 loki/config.yaml
 mimir/config.yaml
+alloy/config.alloy
