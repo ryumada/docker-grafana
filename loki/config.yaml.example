@@ -1,60 +1,32 @@
+# This is a complete configuration to deploy Loki backed by a GCS.
+# Index files will be written locally at /loki/index and, eventually, will be shipped to the storage via tsdb-shipper.
+
 auth_enabled: false
 
 server:
   http_listen_port: 3100
-  grpc_listen_port: 9096
 
 common:
-  path_prefix: /var/loki
-  replication_factor: 1
   ring:
+    instance_addr: 127.0.0.1
     kvstore:
-      store: memberlist
-
-memberlist:
-  join_members: []
+      store: inmemory
+  replication_factor: 1
+  path_prefix: /var/lib/loki
 
 schema_config:
   configs:
-    - from: 2024-01-01
-      store: boltdb-shipper
-      object_store: gcs
-      schema: v13
-      index:
-        prefix: loki_index_
-        period: 24h
+  - from: 2020-05-15
+    store: tsdb
+    object_store: gcs
+    schema: v13
+    index:
+      prefix: index_
+      period: 24h
 
 storage_config:
-  boltdb_shipper:
-    shared_store: gcs
-    active_index_directory: /var/loki/index
-    cache_location: /var/loki/cache
+  tsdb_shipper:
+    active_index_directory: /var/lib/loki/index
+    cache_location: /var/lib/loki/index_cache
   gcs:
     bucket_name: ${LOKI_GCS_BUCKET}
-
-chunk_store_config:
-  chunk_cache_config:
-    embedded_cache:
-      enabled: true
-      max_size_mb: 100
-
-limits_config:
-  allow_structured_metadata: true
-  reject_old_samples: true
-  reject_old_samples_max_age: 168h
-
-query_range:
-  results_cache:
-    cache:
-      embedded_cache:
-        enabled: true
-        max_size_mb: 100
-
-frontend:
-  max_outstanding_per_tenant: 2048
-
-ruler:
-  alertmanager_url: http://alertmanager:9093
-
-analytics:
-  reporting_enabled: false
