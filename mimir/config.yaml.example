@@ -4,7 +4,7 @@ common:
   storage:
     backend: gcs
     gcs:
-      service_account: /etc/mimir/gcs-service_account.json # Reference the file created by setup.sh
+      service_account: /run/secrets/mimir-gcs-credentials # Reference the secret mounted by Docker Swarm
 
 blocks_storage:
   gcs:
