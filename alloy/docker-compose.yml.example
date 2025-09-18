@@ -11,7 +11,6 @@ services:
       MIMIR_REMOTE_WRITE_URL: ${ALLOY_MIMIR_REMOTE_WRITE_URL}
       ALLOY_HOSTNAME: "{{.Node.Hostname}}"
     volumes:
-      - ./config.alloy:/etc/alloy/config.alloy:ro
       - /var/log:/var/log:ro
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
@@ -27,8 +26,15 @@ services:
       mode: global
       restart_policy:
         condition: any
+    configs: # <-- Add this section to the service
+      - source: alloy-config
+        target: /etc/alloy/config.alloy
 
 networks:
   stack-network:
     external: true
     name: ${OVERLAY_NETWORK_NAME}
+
+configs: # <-- Add this top-level section
+  alloy-config:
+    file: ./config.alloy
