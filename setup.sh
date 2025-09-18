@@ -237,17 +237,20 @@ main() {
             "Populate $var in your .env file."
     done
 
+    # Decode Mimir GCS Service Account JSON for direct embedding
+    if require_var "MIMIR_GCS_SERVICE_ACCOUNT_JSON_B64"; then
+        export MIMIR_GCS_SERVICE_ACCOUNT_JSON_DECODED=$(echo "${MIMIR_GCS_SERVICE_ACCOUNT_JSON_B64}" | base64 --decode)
+    else
+        log_error "MIMIR_GCS_SERVICE_ACCOUNT_JSON_B64 is not set or is a placeholder. Mimir config will not have GCS service account."
+        # Export an empty string or a placeholder if it's not set, to avoid errors during envsubst
+        export MIMIR_GCS_SERVICE_ACCOUNT_JSON_DECODED=""
+    fi
+
     executeCommand \
         "Writing Loki service account" \
         "write_secret_file LOKI_GCS_SERVICE_ACCOUNT_JSON_B64 '${ROOT_DIR}/loki/gcs-service-account.json' base64" \
         "Loki credentials written" \
         "Populate LOKI_GCS_SERVICE_ACCOUNT_JSON_B64 with base64 encoded JSON."
-
-    executeCommand \
-        "Writing Mimir service account" \
-        "write_secret_file MIMIR_GCS_SERVICE_ACCOUNT_JSON_B64 '${ROOT_DIR}/mimir/gcs-service-account.json' base64" \
-        "Mimir credentials written" \
-        "Populate MIMIR_GCS_SERVICE_ACCOUNT_JSON_B64 with base64 encoded JSON."
 
     executeCommand \
         "Writing Alertmanager webhook" \

@@ -11,10 +11,7 @@ services:
     configs:
       - source: ${MIMIR_SWARM_CONFIG_NAME}
         target: /etc/mimir/config.yaml
-    secrets:
-      - mimir-gcs-credentials
     environment:
-      GOOGLE_APPLICATION_CREDENTIALS: /run/secrets/mimir-gcs-credentials
     networks:
       - stack-network
     logging:
@@ -37,9 +34,6 @@ configs:
   ${MIMIR_SWARM_CONFIG_NAME}:
     file: ${MIMIR_CONFIG_FILE}
 
-secrets:
-  mimir-gcs-credentials:
-    file: ./gcs-service-account.json
 
 networks:
   stack-network:
