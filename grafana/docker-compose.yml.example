@@ -30,7 +30,7 @@ services:
         condition: any
       labels:
         - traefik.enable=true
-        - traefik.docker.network=${OVERLAY_NETWORK_NAME}
+        - traefik.swarm.network=${OVERLAY_NETWORK_NAME}
         - traefik.http.routers.grafana.rule=Host(`${GRAFANA_DOMAIN}`)
         - traefik.http.routers.grafana.entrypoints=${TRAEFIK_SECURE_ENTRYPOINT}
         - traefik.http.routers.grafana.tls.certresolver=${TRAEFIK_CERT_RESOLVER}
