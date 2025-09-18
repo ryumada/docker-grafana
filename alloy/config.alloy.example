@@ -35,18 +35,20 @@ prometheus.exporter.unix "host_exporter" {}
 
 prometheus.scrape "host_metrics" {
   targets    = prometheus.exporter.unix.host_exporter.targets
+  forward_to = [prometheus.relabel.host_metrics.receiver]
+}
+
+prometheus.relabel "host_metrics" {
   forward_to = [prometheus.remote_write.mimir_sink.receiver]
 
-  relabel_configs {
-    rule {
-      action       = "replace"
-      target_label = "service.name"
-      replacement  = "host-metrics"
-    }
-    rule {
-      action       = "replace"
-      target_label = "host.name"
-      replacement  = env("ALLOY_HOSTNAME")
-    }
+  rule {
+    action       = "replace"
+    target_label = "service.name"
+    replacement  = "host-metrics"
+  }
+  rule {
+    action       = "replace"
+    target_label = "host.name"
+    replacement  = env("ALLOY_HOSTNAME")
   }
 }
