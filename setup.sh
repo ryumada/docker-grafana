@@ -294,6 +294,7 @@ main() {
         "${ROOT_DIR}/alloy/docker-compose.yml.example:${ROOT_DIR}/alloy/docker-compose.yml"
         "${ROOT_DIR}/alloy/config.alloy.example:${ROOT_DIR}/alloy/config.alloy"
         "${ROOT_DIR}/loki/config.yaml.example:${ROOT_DIR}/loki/config.yaml"
+        "${ROOT_DIR}/grafana/provisioning/datasources/datasources.yaml.example:${ROOT_DIR}/grafana/provisioning/datasources/datasources.yaml"
         "${ROOT_DIR}/mimir/config.yaml.example:${MIMIR_CONFIG_FILE}"
     )
 
