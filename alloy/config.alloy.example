@@ -43,12 +43,12 @@ prometheus.relabel "host_metrics" {
 
   rule {
     action       = "replace"
-    target_label = "service.name"
+    target_label = "my_service_name"
     replacement  = "host-metrics"
   }
   rule {
     action       = "replace"
-    target_label = "host.name"
+    target_label = "my_host_name"
     replacement  = env("ALLOY_HOSTNAME")
   }
 }
