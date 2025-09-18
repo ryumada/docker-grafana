@@ -25,9 +25,6 @@ services:
         max-file: "3"
     deploy:
       mode: global
-      placement:
-        constraints:
-          - "${ALLOY_NODE_CONSTRAINT}"
       restart_policy:
         condition: any
 
