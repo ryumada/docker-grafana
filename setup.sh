@@ -237,9 +237,32 @@ main() {
             "Populate $var in your .env file."
     done
 
-    # Decode Mimir GCS Service Account JSON for direct embedding
+    # Decode Mimir GCS Service Account JSON and indent for YAML block scalars
+    # This preserves pretty JSON inside:
+    # common:
+    #   storage:
+    #     gcs:
+    #       service_account: |
+    #         {\n          "type": ... }
     if require_var "MIMIR_GCS_SERVICE_ACCOUNT_JSON_B64"; then
-        export MIMIR_GCS_SERVICE_ACCOUNT_JSON_DECODED=$(echo "${MIMIR_GCS_SERVICE_ACCOUNT_JSON_B64}" | base64 --decode)
+        # Decode JSON and indent: 10 spaces for all lines except the last, which gets 8.
+        # This matches YAML expectation under:
+        #   service_account: |
+        #     ... (10 spaces)
+        #   (closing brace) (8 spaces)
+        export MIMIR_GCS_SERVICE_ACCOUNT_JSON_DECODED=$(echo "${MIMIR_GCS_SERVICE_ACCOUNT_JSON_B64}" \
+            | base64 --decode \
+            | awk '{ lines[NR] = $0 } END { \
+                if (NR == 1) { \
+                    # Single-line JSON: print with 8 spaces
+                    printf "        %s\n", lines[1]; \
+                    exit \
+                } \
+                # Multi-line: first line 8 spaces (opening brace), middle lines 10, last line 8
+                printf "        %s\n", lines[1]; \
+                for (i = 2; i < NR; i++) printf "          %s\n", lines[i]; \
+                printf "        %s\n", lines[NR]; \
+            }')
     else
         log_error "MIMIR_GCS_SERVICE_ACCOUNT_JSON_B64 is not set or is a placeholder. Mimir config will not have GCS service account."
         # Export an empty string or a placeholder if it's not set, to avoid errors during envsubst
