@@ -259,7 +259,6 @@ main() {
                     exit \
                 } \
                 # Multi-line: first line 8 spaces (opening brace), middle lines 10, last line 8
-                printf "        %s\n", lines[1]; \
                 for (i = 2; i < NR; i++) printf "          %s\n", lines[i]; \
                 printf "        %s\n", lines[NR]; \
             }')
