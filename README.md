@@ -142,7 +142,7 @@ nc -vzu PEER_IP 4789
    docker node update --label-add role.loki=true loki-node-name
    docker node update --label-add role.mimir=true mimir-node-name
    docker node update --label-add role.alertmanager=true alertmanager-node-name
-   docker node update --label-add role.alloy=true alloy-node-name
+   # Alloy is deployed in global mode without a placement constraint.
    ```
 
 To check if the node is already added the role, run the following command:
