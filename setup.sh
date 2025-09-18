@@ -262,7 +262,7 @@ main() {
                 # middle lines get 10 spaces, last line no extra indent
                 printf "%s\n", lines[1]; \
                 for (i = 2; i < NR; i++) printf "          %s\n", lines[i]; \
-                printf "%s\n", lines[NR]; \
+                printf "        %s\n", lines[NR]; \
             }')
     else
         log_error "MIMIR_GCS_SERVICE_ACCOUNT_JSON_B64 is not set or is a placeholder. Mimir config will not have GCS service account."
