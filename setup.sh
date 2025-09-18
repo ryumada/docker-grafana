@@ -254,13 +254,15 @@ main() {
             | base64 --decode \
             | awk '{ lines[NR] = $0 } END { \
                 if (NR == 1) { \
-                    # Single-line JSON: print with 8 spaces
-                    printf "        %s\n", lines[1]; \
+                    # Single-line JSON: emit as-is (no extra indent) because YAML already provides 8 spaces
+                    printf "%s\n", lines[1]; \
                     exit \
                 } \
-                # Multi-line: first line 8 spaces (opening brace), middle lines 10, last line 8
+                # Multi-line: first line no extra indent (opening brace already at 8 via YAML), \
+                # middle lines get 10 spaces, last line no extra indent
+                printf "%s\n", lines[1]; \
                 for (i = 2; i < NR; i++) printf "          %s\n", lines[i]; \
-                printf "        %s\n", lines[NR]; \
+                printf "%s\n", lines[NR]; \
             }')
     else
         log_error "MIMIR_GCS_SERVICE_ACCOUNT_JSON_B64 is not set or is a placeholder. Mimir config will not have GCS service account."
