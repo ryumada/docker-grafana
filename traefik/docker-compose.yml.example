@@ -5,7 +5,7 @@ services:
       - --log.level=INFO
       - --api.dashboard=true
       - --providers.docker=true
-      - --providers.docker.swarmMode=true
+      - --providers.swarm=true
       - --providers.docker.exposedbydefault=false
       - --providers.docker.network=${OVERLAY_NETWORK_NAME}
       - --entrypoints.${TRAEFIK_INSECURE_ENTRYPOINT}.address=:80
