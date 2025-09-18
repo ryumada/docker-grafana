@@ -35,7 +35,7 @@ volumes:
 
 configs:
   mimir-config:
-    file: ./config.yaml
+    file: ${MIMIR_CONFIG_FILE}
 
 secrets:
   mimir-gcs-credentials:

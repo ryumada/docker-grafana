@@ -241,6 +241,10 @@ main() {
         "Alertmanager webhook written" \
         "Populate ALERTMANAGER_GOOGLE_CHAT_WEBHOOK_URL with your Google Chat webhook URL."
 
+    # Generate a unique name for Mimir config based on content hash
+    MIMIR_CONFIG_HASH=$(sha256sum "${ROOT_DIR}/mimir/config.yaml.example" | awk '{print $1}')
+    export MIMIR_CONFIG_FILE="${ROOT_DIR}/mimir/config-${MIMIR_CONFIG_HASH}.yaml"
+
     local templates=(
         "${ROOT_DIR}/traefik/docker-compose.yml.example:${ROOT_DIR}/traefik/docker-compose.yml"
         "${ROOT_DIR}/grafana/docker-compose.yml.example:${ROOT_DIR}/grafana/docker-compose.yml"
@@ -250,7 +254,7 @@ main() {
         "${ROOT_DIR}/alloy/docker-compose.yml.example:${ROOT_DIR}/alloy/docker-compose.yml"
         "${ROOT_DIR}/alloy/config.alloy.example:${ROOT_DIR}/alloy/config.alloy"
         "${ROOT_DIR}/loki/config.yaml.example:${ROOT_DIR}/loki/config.yaml"
-        "${ROOT_DIR}/mimir/config.yaml.example:${ROOT_DIR}/mimir/config.yaml"
+        "${ROOT_DIR}/mimir/config.yaml.example:${MIMIR_CONFIG_FILE}"
     )
 
     for pair in "${templates[@]}"; do
