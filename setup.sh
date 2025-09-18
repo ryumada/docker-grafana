@@ -38,6 +38,18 @@ log_output() {
     printf "%s\n" "$1"
 }
 
+backup_file() {
+    local file_to_backup=$1
+    if [[ -f "$file_to_backup" ]]; then
+        local timestamp=$(date +"%Y%m%d%H%M%S")
+        local backup_dir=$(dirname "$file_to_backup")
+        local filename=$(basename "$file_to_backup")
+        local backup_file="${backup_dir}/${filename}.${timestamp}.bak"
+        log_warn "Backing up existing file: $file_to_backup to $backup_file"
+        mv "$file_to_backup" "$backup_file"
+    fi
+}
+
 executeCommand() {
     local description=$1
     local command_to_run=$2
@@ -171,6 +183,7 @@ write_secret_file() {
     require_var "$var_name"
     local value=${!var_name}
 
+    backup_file "$target_file"
     mkdir -p "$(dirname "$target_file")"
 
     if [[ "$mode" == "base64" ]]; then
@@ -190,6 +203,7 @@ render_template() {
         return 1
     fi
 
+    backup_file "$target"
     mkdir -p "$(dirname "$target")"
     envsubst < "$template" > "$target"
 }
@@ -241,10 +255,8 @@ main() {
         "Alertmanager webhook written" \
         "Populate ALERTMANAGER_GOOGLE_CHAT_WEBHOOK_URL with your Google Chat webhook URL."
 
-    # Generate a unique name for Mimir config based on content hash
-    MIMIR_CONFIG_HASH=$(sha256sum "${ROOT_DIR}/mimir/config.yaml.example" | awk '{print $1}')
-    export MIMIR_CONFIG_FILE="${ROOT_DIR}/mimir/config-${MIMIR_CONFIG_HASH}.yaml"
-    export MIMIR_SWARM_CONFIG_NAME="mimir-config-${MIMIR_CONFIG_HASH}" # New: Export dynamic Swarm config name
+    export MIMIR_CONFIG_FILE="${ROOT_DIR}/mimir/config.yaml"
+    export MIMIR_SWARM_CONFIG_NAME="mimir-config" # New: Export dynamic Swarm config name
 
     local templates=(
         "${ROOT_DIR}/traefik/docker-compose.yml.example:${ROOT_DIR}/traefik/docker-compose.yml"
