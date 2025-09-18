@@ -225,22 +225,83 @@ This usually indicates blocked swarm ports. Double-check cloud-provider firewall
 
 ### WireGuard overlay transport
 
-Follow these condensed steps on every VPS if you elect to run the swarm over WireGuard:
+Follow these steps on every VPS if you elect to run the swarm over WireGuard:
 
-1. Install WireGuard:
+1. Install WireGuard
    ```bash
-   sudo apt update && sudo apt install wireguard -y
+   sudo apt update && sudo apt install -y wireguard
    ```
-2. Generate keys on each node (`/etc/wireguard/private.key` and `public.key`).
-3. Configure `/etc/wireguard/wg0.conf` with unique `/24` addresses (e.g., `10.10.0.0/24`). The manager lists every peer; workers reference the manager as their peer.
-4. Enable IP forwarding on the manager (`net.ipv4.ip_forward=1`) and reload sysctl.
-5. Allow UDP 51820 on all firewalls, bring the interface up, and enable at boot:
+
+2. Generate keys on each node
    ```bash
-   sudo ufw allow 51820/udp
+   cd /etc/wireguard/ && sudo umask 077
+   sudo wg genkey | sudo tee private.key | sudo wg pubkey | sudo tee public.key
+   ```
+   - Record the `public.key` from every server (you'll paste these into peer sections on the other nodes).
+
+3. Configure `/etc/wireguard/wg0.conf`
+   - Choose a private subnet, e.g., `10.10.0.0/24`. Manager gets `10.10.0.1`, workers use `10.10.0.2+`.
+   - Manager (`/etc/wireguard/wg0.conf`):
+     ```
+     [Interface]
+     Address = 10.10.0.1/24
+     PrivateKey = <MANAGER_PRIVATE_KEY>
+     ListenPort = 51820
+
+     # Repeat this Peer section for every worker
+     [Peer]
+     PublicKey = <WORKER_PUBLIC_KEY>
+     Endpoint = <WORKER_PUBLIC_IP>:51820
+     AllowedIPs = <WORKER_PRIVATE_IP>/32
+     PersistentKeepalive = 25
+     ```
+   - Worker (`/etc/wireguard/wg0.conf`):
+     ```
+     [Interface]
+     Address = <WORKER_PRIVATE_IP>/24
+     PrivateKey = <WORKER_PRIVATE_KEY>
+     ListenPort = 51820
+
+     [Peer]
+     PublicKey = <MANAGER_PUBLIC_KEY>
+     Endpoint = <MANAGER_PUBLIC_IP>:51820
+     AllowedIPs = 10.10.0.0/24
+     PersistentKeepalive = 25
+     ```
+   - If a worker sits behind NAT, forward UDP/51820 or rely on PersistentKeepalive to maintain the session. Full mesh (worker-to-worker peers) is optional.
+
+4. Enable IP forwarding on the manager
+   ```bash
+   echo 'net.ipv4.ip_forward=1' | sudo tee /etc/sysctl.d/99-wireguard-forward.conf
+   sudo sysctl --system
+   ```
+
+5. Open firewall, start, and enable WireGuard
+   ```bash
+   sudo ufw allow 51820/udp || true
    sudo wg-quick up wg0
    sudo systemctl enable wg-quick@wg0
+   sudo ufw reload || true
    ```
-6. Permit swarm ports over the WireGuard subnet and re-run `docker swarm init --advertise-addr <WG_IP>` and the join commands.
+
+6. Verify tunnel connectivity
+   ```bash
+   sudo wg show
+   ping -c 3 10.10.0.1   # from workers to manager
+   ```
+
+7. Reconfigure Swarm to use the WireGuard network
+   - Allow the Swarm control/data-plane ports (2377, 7946/tcp+udp, 4789/udp) over the WireGuard subnet.
+   - Create the overlay network so Swarm traffic rides the WireGuard tunnel:
+     ```bash
+     # Without encryption when ESP is unavailable but WireGuard is in place
+     docker network create \
+       --driver overlay \
+       --attachable \
+       --opt com.docker.network.driver.mtu=1420 \
+       grafana
+     ```
+   - Adjust MTU/flags as needed for your environment.
 
 ### Scaling Alloy agents
 
