@@ -244,6 +244,7 @@ main() {
     # Generate a unique name for Mimir config based on content hash
     MIMIR_CONFIG_HASH=$(sha256sum "${ROOT_DIR}/mimir/config.yaml.example" | awk '{print $1}')
     export MIMIR_CONFIG_FILE="${ROOT_DIR}/mimir/config-${MIMIR_CONFIG_HASH}.yaml"
+    export MIMIR_SWARM_CONFIG_NAME="mimir-config-${MIMIR_CONFIG_HASH}" # New: Export dynamic Swarm config name
 
     local templates=(
         "${ROOT_DIR}/traefik/docker-compose.yml.example:${ROOT_DIR}/traefik/docker-compose.yml"

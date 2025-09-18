@@ -9,7 +9,7 @@ services:
     volumes:
       - mimir-data:/var/mimir
     configs:
-      - source: mimir-config
+      - source: ${MIMIR_SWARM_CONFIG_NAME}
         target: /etc/mimir/config.yaml
     secrets:
       - mimir-gcs-credentials
@@ -34,7 +34,7 @@ volumes:
   mimir-data:
 
 configs:
-  mimir-config:
+  ${MIMIR_SWARM_CONFIG_NAME}:
     file: ${MIMIR_CONFIG_FILE}
 
 secrets:
