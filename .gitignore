@@ -7,5 +7,6 @@
 
 alertmanager/google-chat-webhook.url
 alloy/config.alloy
+grafana/provisioning/datasources/datasources.yaml
 loki/config.yaml
 mimir/config.yaml
